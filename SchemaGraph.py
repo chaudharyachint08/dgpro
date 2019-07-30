@@ -2,16 +2,19 @@ class SG:
 	'Class for creating Schema File from reading schema_file,fk_file,ix_file,hist_dir'
 
 	def __init__(self,schema_file,fk_file,ix_file,hist_dir):
+		self.relations, self.fk_constraints, self.indexes = {}, {}, {}
+		fix_types, var_types = ['date','time','integer','char'], ['varchar','decimal']
 
 		'#### Parse Schema File Here ####'
 		def relation_builder(self,relation_name,relation_description):
 			# print('\n',relation_name)
 			# for line in relation_description: print('\t',line)
+			self.relations[relation_name] = {'attrs':{}}
 			pk_creator, not_null_placer = 'primary key','not null'
-			fix_types, var_types = ['date','time','integer','char','','','','','','',''], ['varchar','decimal','','','','','','','']
 			for line in relation_description:
 				if pk_creator in line:
-					primary_attr = tuple(line[line.index(pk_creator)+len(pk_creator):].strip().strip('()').strip().split(','))
+					primary_key = tuple(line[line.index(pk_creator)+len(pk_creator):].strip().strip('()').strip().split(','))
+					self.relations[relation_name]['primary_key'] = primary_key
 				else:
 					for typ in var_types+fix_types:
 						if typ in line:
@@ -19,11 +22,9 @@ class SG:
 					else:
 						raise Exception('Type not found for defined attribute\n{}'.format(relation_name,line))
 					attr_name = line[:line.index(typ)].strip()
-					not_null = True if not_null_placer in line else False
+					self.relations[relation_name]['attrs'][attr_name] = { 'type':typ, 'not_null':(not_null_placer in line) }
 					if typ in var_types:
-						pass
-					else:
-						pass
+						self.relations[relation_name]['attrs'][attr_name]['extn'] = eval(line[line.index('('):line.index(')')+1])
 			pass
 		relation_creator = 'create table'
 		with open(schema_file) as schema_handle:
@@ -46,6 +47,7 @@ class SG:
 		# rltn1.attr1->rltn2.attr2, Description for Foreign-Key interpretation
 		def fk_builder(self,fkc_name,r1,a1,r2,a2):
 			# print(fkc_name,(r1,a1),(r2,a2))
+			self.fk_constraints[(fkc_name,(r1,a1))] = (r2,a2)
 			pass
 		relation_alter, constraint_creator, fk_creator, ref_creator = 'alter table', 'add constraint', 'foreign key', 'references'
 		with open(fk_file) as fk_handle:
@@ -65,6 +67,7 @@ class SG:
 		# rltn.attr, Description for Index interpretation
 		def ix_builder(self,ix_name,r,a):
 			# print((r,a))
+			self.indexes[(ix_name,r,a)] = None
 			pass
 		ix_creator, ix_placer = 'CREATE INDEX', 'ON'
 		with open(ix_file) as ix_handle:
@@ -79,6 +82,9 @@ class SG:
 
 
 		'Parse Histograms Directory Here'
+		pass
+
+		'Finalising SchemaGraph Object'
 		pass
 
 
