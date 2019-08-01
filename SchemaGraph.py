@@ -42,7 +42,6 @@ class SG:
 					else: # Statment within Relation definition for attribute or primary key
 						relation_description.append(line.strip().strip(',').strip())
 
-
 		'#### Parse Foreign-Key File Here ####'
 		# rltn1.attr1->rltn2.attr2, Description for Foreign-Key interpretation
 		def fk_builder(self,fkc_name,r1,a1,r2,a2):
@@ -62,7 +61,6 @@ class SG:
 					fkc_name = line[ line.index(constraint_creator)+len(constraint_creator) : line.index(fk_creator) ].strip()
 					fk_builder(self,fkc_name,r1,a1,r2,a2)
 
-
 		'#### Parse Index File Here ####'
 		# rltn.attr, Description for Index interpretation
 		def ix_builder(self,ix_name,r,a):
@@ -79,7 +77,6 @@ class SG:
 					a = t[t.index('('):].strip().strip('()').strip()
 					ix_name = line[ line.index(ix_creator)+len(ix_creator) : line.index(ix_placer) ].strip()
 					ix_builder(self,ix_name,r,a)
-
 
 		'Parse Histograms Directory Here'
 		pass
