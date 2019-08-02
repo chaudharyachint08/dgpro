@@ -1,0 +1,7 @@
+ERROR :( 
+ alter table catalog_page add constraint cp_p foreign key  (cp_promo_id) references promotion (p_promo_sk); 
+ column "cp_promo_id" referenced in foreign key constraint does not exist
+
+ERROR :( 
+ alter table catalog_returns add constraint cr_d2 foreign key  (cr_ship_date_sk) references date_dim (d_date_sk); 
+ column "cr_ship_date_sk" referenced in foreign key constraint does not exist
