@@ -1,4 +1,3 @@
-
 '''
 https://developers.google.com/drive/api/v3/folder
 https://developers.google.com/drive/api/v3/about-auth#what-scope-or-scopes-does-my-app-need?
@@ -11,13 +10,14 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from googleapiclient.http import MediaIoBaseUpload,MediaIoBaseDownload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 # Used for getting drive_folder_name to drive_folder_id
 gd_name_to_id = {'.':None} # Drive Folder when Nowhere has None as ID
+
 
 def init_service():
     global drive_service
@@ -44,11 +44,17 @@ def init_service():
             pickle.dump(creds, token)
     drive_service = build('drive', 'v3', credentials=creds)
 
+
 def gd_mkdir(name):
     file_metadata = { 'name': name, 'mimeType': 'application/vnd.google-apps.folder' }
     file = drive_service.files().create(body=file_metadata,fields='id').execute()
     gd_name_to_id[name] = file.get('id')
     print('Folder Created with ID: %s' % file.get('id'))
+
+
+def gd_remove(id):
+    drive_service.files().delete(fileId=id).execute()
+
 
 def gd_move_to_dir(file_id,folder_id):
     # Retrieve the existing parents to remove
@@ -61,6 +67,7 @@ def gd_move_to_dir(file_id,folder_id):
                                         fields='id, parents',
                                         **({'removeParents':previous_parents} if file.get('parents') else {}),
                                         ).execute()
+
 
 def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     if disk_name is None:
@@ -88,19 +95,21 @@ def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
             if done:
                 break
 
+
 def gd_upload(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     if disk_name is None:
         disk_name = drive_name
 
-    file_metadata = {'name': 'photo.jpg'}
+    file_metadata = {'name': drive_name}
     if drive_path_id is not None:
         file_metadata.update({'parents': [drive_path_id]})
-    media = MediaIoBaseUpload(os.path.join(disk_path,disk_name), resumable=True)
+    media = MediaFileUpload(os.path.join(disk_path,disk_name),mimetype='text/csv', resumable=True)
     file = drive_service.files().create(body=file_metadata,
                                         media_body=media,
                                         fields='id').execute()
     gd_name_to_id[drive_name] = file.get('id')
     print('File ID: %s' % file.get('id'))
+
 
 
 if __name__ == '__main__':
@@ -110,4 +119,5 @@ if __name__ == '__main__':
     if drive_path != '.':
         gd_mkdir(drive_path)
     gd_upload (  drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
-    #gd_download( drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
+    gd_download( drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
+    gd_remove(gd_name_to_id[drive_name])
