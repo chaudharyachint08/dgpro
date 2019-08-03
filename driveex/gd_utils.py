@@ -45,14 +45,14 @@ def init_service():
             pickle.dump(creds, token)
     drive_service = build('drive', 'v3', credentials=creds)
 
-def gd_mkdir(name):
+def mkdir(name):
     'Creating a folder in My Drive for storage management'
     file_metadata = { 'name': name, 'mimeType': 'application/vnd.google-apps.folder' }
     file = drive_service.files().create(body=file_metadata,fields='id').execute()
     gd_name_to_id[name] = file.get('id')
     print('Folder Created with ID: %s' % file.get('id'))
 
-def gd_move_to_dir(file_id,folder_id):
+def move_to_dir(file_id,folder_id):
     'make file child of given directory'
     # Retrieve the existing parents to remove
     file = drive_service.files().get(fileId=file_id,
@@ -65,7 +65,7 @@ def gd_move_to_dir(file_id,folder_id):
                                         **({'removeParents':previous_parents} if file.get('parents') else {}),
                                         ).execute()
 
-def gd_remove(id): 
+def remove(id): 
     'Removing a file (or folder-file) from GDrive'
     drive_service.files().delete( fileId=id ).execute()
 
@@ -93,7 +93,7 @@ def find_file(file_name,drive_path_id=None):
             return True
     return False
 
-def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
+def download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     'Downloader from GDrive'
     if disk_name is None:
         disk_name = drive_name
@@ -119,7 +119,7 @@ def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
             if done:
                 break
 
-def gd_upload(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
+def upload(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     'Uploader for GDrive'
     if disk_name is None:
         disk_name = drive_name
@@ -141,10 +141,10 @@ if __name__ == '__main__':
     init_service()
 
     if (drive_path != '.') and (not find_dir(drive_path)):
-        gd_mkdir(drive_path)
+        mkdir(drive_path)
     if find_file(drive_name,gd_name_to_id[drive_path]):
-	    gd_remove(gd_name_to_id[drive_name])
+	    remove(gd_name_to_id[drive_name])
 
-    gd_upload (  drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
-    gd_download( drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
-    gd_remove(gd_name_to_id[drive_name])
+    upload (  drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
+    download( drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
+    remove(gd_name_to_id[drive_name])
