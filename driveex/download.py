@@ -9,8 +9,11 @@ from googleapiclient.http import MediaIoBaseUpload,MediaIoBaseDownload
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
+# Used for getting drive_folder_name to drive_folder_id
+gd_name_to_id = {}
 
-def get_service():
+def init_service():
+    global drive_service
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
     """
@@ -32,42 +35,59 @@ def get_service():
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
+    drive_service = build('drive', 'v3', credentials=creds)
 
-    service = build('drive', 'v3', credentials=creds)
-    return service
+def gd_mkdir(name):
+    file_metadata = { 'name': name, 'mimeType': 'application/vnd.google-apps.folder' }
+    file = drive_service.files().create(body=file_metadata,fields='id').execute()
+    gd_name_to_id[name] = file.get('id')
+    print('Folder Created with ID: %s' % file.get('id'))
 
+def gd_move_to_dir(file_id,folder_id):
+    # Retrieve the existing parents to remove
+    file = drive_service.files().get(fileId=file_id,
+                                     fields='parents').execute()
+    previous_parents = ",".join(file.get('parents'))
+    # Move the file to the new folder
+    file = drive_service.files().update(fileId=file_id,
+                                        addParents=folder_id,
+                                        removeParents=previous_parents,
+                                        fields='id, parents').execute()
 
-def download_file(drive_name,drive_path='.',disk_name=None,disk_path='.'):
+def gd_download(drive_name,drive_path_id=None,disk_name=None,disk_path='.'):
     if disk_name is None:
         disk_name = drive_name
     # Call the Drive v3 API
-    service = get_service()
-    results = service.files().list(
-        pageSize=10, fields="nextPageToken, files(id, name)").execute()
+    results = drive_service.files().list(fields="nextPageToken, files(id, name)",
+        **({} if drive_path_id is None else {'q':(drive_path_id in 'parents')})).execute()
     items = results.get('files', [])
-
-    if not items:
-        print('No files found.')
+    for item in items:
+        print(u'{0} ({1})'.format(item['name'], item['id']))
+        if item['name'] == drive_name:
+            file_id, file_name = item['id'], item['name']
+            gd_name_to_id[file_name] = file_id
+            break
     else:
-        print('Files:')
-        for item in items:
-            print(u'{0} ({1})'.format(item['name'], item['id']))
-            if item['name']==download_name:
-                file_id = item['id']
-                file_name = item['name']
+        print('File Not Found',drive_name)
 
-    #   file_id = '1ZdR3L3qP4Bkq8noWLJHSr_iBau0DNT4Kli4SxNc2YEo'
-    request = service.files().get_media(fileId=file_id)
-    fh = io.FileIO(download_name,'wb')
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while done is False:
-        status, done = downloader.next_chunk()
-        print("Download %d%%." % int(status.progress() * 100))
+    request = drive_service.files().get_media(fileId=file_id)
+    with io.FileIO(os.path.join(disk_path,disk_name),'wb') as fh:
+        downloader = MediaIoBaseDownload(fh, request)
+        while True:
+            status, done = downloader.next_chunk()
+            print("Download %d%%." % int(status.progress() * 100))
+            if done:
+                break
+
+def gd_upload():
+    pass
 
 
 if __name__ == '__main__':
     disk_path,  disk_name  = '.','data.csv'
     drive_path, drive_name = '.','data.csv'
-    gd_upload()
-    gd_download()
+    init_service()
+    if drive_path != '.':
+        gd_mkdir(drive_path)
+    gd_download(drive_name,drive_path,disk_name,disk_path)
+    gd_upload(drive_name,drive_path,disk_name,disk_path)
