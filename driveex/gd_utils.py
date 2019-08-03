@@ -11,6 +11,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
+
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
@@ -52,7 +53,7 @@ def gd_mkdir(name):
     print('Folder Created with ID: %s' % file.get('id'))
 
 def gd_move_to_dir(file_id,folder_id):
-    ''
+    'make file child of given directory'
     # Retrieve the existing parents to remove
     file = drive_service.files().get(fileId=file_id,
                                      fields='parents').execute()
@@ -70,7 +71,6 @@ def gd_remove(id):
 
 def find_dir(dir_name):
     'Find given directory in GDrive and if exist, set it in gd_name_to_id'
-    # Call the Drive v3 API
     results = drive_service.files().list(q="mimeType='application/vnd.google-apps.folder'",
     	fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
@@ -83,7 +83,6 @@ def find_dir(dir_name):
 
 def find_file(file_name,drive_path_id=None):
     'Find given file [in directory] in GDrive and if exist, set it in gd_name_to_id'
-    # Call the Drive v3 API
     results = drive_service.files().list(fields="nextPageToken, files(id, name)",
     	**({} if drive_path_id is None else {'q':"%s in parents"%repr(drive_path_id)})).execute()
     items = results.get('files', [])
@@ -93,7 +92,6 @@ def find_file(file_name,drive_path_id=None):
             gd_name_to_id[file_name] = file_id
             return True
     return False
-
 
 def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     'Downloader from GDrive'
@@ -112,7 +110,6 @@ def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     else:
         print('File Not Found',drive_name)
         return
-
     request = drive_service.files().get_media(fileId=file_id)
     with io.FileIO(os.path.join(disk_path,disk_name),'wb') as fh:
         downloader = MediaIoBaseDownload(fh, request)
@@ -126,7 +123,6 @@ def gd_upload(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
     'Uploader for GDrive'
     if disk_name is None:
         disk_name = drive_name
-
     file_metadata = {'name': drive_name}
     if drive_path_id is not None:
         file_metadata.update({'parents': [drive_path_id]})
@@ -136,7 +132,6 @@ def gd_upload(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
                                         fields='id').execute()
     gd_name_to_id[drive_name] = file.get('id')
     print('File ID: %s' % file.get('id'))
-
 
 
 if __name__ == '__main__':
@@ -149,6 +144,7 @@ if __name__ == '__main__':
         gd_mkdir(drive_path)
     if find_file(drive_name,gd_name_to_id[drive_path]):
 	    gd_remove(gd_name_to_id[drive_name])
+
     gd_upload (  drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
     gd_download( drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
     gd_remove(gd_name_to_id[drive_name])
