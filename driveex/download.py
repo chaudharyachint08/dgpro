@@ -1,4 +1,11 @@
-from __future__ import print_function
+
+'''
+https://developers.google.com/drive/api/v3/folder
+https://developers.google.com/drive/api/v3/about-auth#what-scope-or-scopes-does-my-app-need?
+https://developers.google.com/drive/api/v3/search-files
+https://developers.google.com/drive/api/v3/reference/files/list
+'''
+
 import pickle, io
 import os.path
 from googleapiclient.discovery import build
@@ -10,7 +17,7 @@ from googleapiclient.http import MediaIoBaseUpload,MediaIoBaseDownload
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 # Used for getting drive_folder_name to drive_folder_id
-gd_name_to_id = {}
+gd_name_to_id = {'.':None} # Drive Folder when Nowhere has None as ID
 
 def init_service():
     global drive_service
@@ -70,6 +77,7 @@ def gd_download(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
             break
     else:
         print('File Not Found',drive_name)
+        return
 
     request = drive_service.files().get_media(fileId=file_id)
     with io.FileIO(os.path.join(disk_path,disk_name),'wb') as fh:
@@ -86,19 +94,20 @@ def gd_upload(drive_name,disk_name=None,drive_path_id=None,disk_path='.'):
 
     file_metadata = {'name': 'photo.jpg'}
     if drive_path_id is not None:
-        file_metadata.update({'parents': [folder_id]})
+        file_metadata.update({'parents': [drive_path_id]})
     media = MediaIoBaseUpload(os.path.join(disk_path,disk_name), resumable=True)
     file = drive_service.files().create(body=file_metadata,
                                         media_body=media,
                                         fields='id').execute()
+    gd_name_to_id[drive_name] = file.get('id')
     print('File ID: %s' % file.get('id'))
 
 
 if __name__ == '__main__':
-    disk_path,  disk_name  = '.','data.csv'
-    drive_path, drive_name = '.','data.csv'
+    disk_path,  disk_name  = '.', 'data.csv'
+    drive_path, drive_name = '.', 'data.csv'
     init_service()
     if drive_path != '.':
         gd_mkdir(drive_path)
-    gd_download(drive_name,drive_path,disk_name,disk_path)
-    gd_upload(drive_name,drive_path,disk_name,disk_path)
+    gd_upload (  drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
+    #gd_download( drive_name,disk_name,gd_name_to_id[drive_path],disk_path )
