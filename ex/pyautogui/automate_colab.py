@@ -76,6 +76,7 @@ def center(tpl):
 
 class AutomateColab(threading.Thread):
     def __init__(self,action_images_dir='.',PAUSE=1,FAILSAFE=True):
+        super(AutomateColab, self).__init__()
         self.main_running, self.auto_thread_running = True, False
         self.action_images_dir = action_images_dir
         self.W, self.H  = pyautogui.size()
@@ -85,44 +86,52 @@ class AutomateColab(threading.Thread):
         pyautogui.FAILSAFE = True 
         # Ideally should return (1366,768)
     
+    def mclick(self,*arg):
+        delay = np.random.randint(1,6)
+        move(*arg,duration=delay)
+        click(*arg)
+
     def run(self):
         'Entire code to automate Google-Colab in this function, as a thread'
         try:
             action = {x:os.path.join(self.action_images_dir,x) for x in os.listdir(self.action_images_dir)}
+            pyautogui.hotkey('altleft','\t')
+            Colab_Count = 0
             while self.main_running:
                 self.auto_thread_running = True
-
-                click_pos = center(locateAll(action['toolbar_runtime.PNG'])[0])        ; click(*click_pos)
-                click_pos = center(locateAll(action['list_reset_all_runtime.PNG'])[0]) ; click(*click_pos)
-                click_pos = center(locateAll(action['dialogue_yes.PNG'])[0])           ; click(*click_pos)
-
+                click_pos = center(locateAll(action['toolbar_runtime.PNG'])[0])        ; self.mclick(*click_pos)
+                click_pos = center(locateAll(action['list_reset_all_runtime.PNG'])[0]) ; self.mclick(*click_pos)
+                click_pos = center(locateAll(action['dialogue_yes.PNG'])[0])           ; self.mclick(*click_pos)
                 while not locateAll(action['vm_ready.PNG']):
+                    continue
+                    '''
                     ls_connect = locateAll(action['colab_connect.PNG'])
                     if ls_connect:
-                        click_pos = center(ls_connect[0])    ; click(*click_pos)
+                        click_pos = center(ls_connect[0])    ; self.mclick(*click_pos)
                     ls_reconnect = locateAll(action['colab_reconnect.PNG'])
                     if ls_reconnect:
-                        click_pos = center(ls_reconnect[0])  ; click(*click_pos)
-
-                click_pos = center(locateAll(action['toolbar_runtime.PNG'])[0])        ; click(*click_pos)
-                click_pos = center(locateAll(action['list_run_all.PNG'])[0])           ; click(*click_pos)
-
-                while True:
+                        click_pos = center(ls_reconnect[0])  ; self.mclick(*click_pos)
+                    '''
+                click_pos = center(locateAll(action['toolbar_runtime.PNG'])[0])        ; self.mclick(*click_pos)
+                click_pos = center(locateAll(action['list_run_all.PNG'])[0])           ; self.mclick(*click_pos)
+                while not locateAll(action['vm_ready.PNG']):
+                    ls_d_close     = [] # locateAll( action['dialogue_close.PNG']     )
+                    ls_d_reconnect = locateAll( action['dialogue_reconnect.PNG'] )
+                    if any((ls_d_close,ls_d_reconnect)):
+                        click_pos = center(ls_d_close[0])  ; self.mclick(*click_pos)
+                        break
                     ls_connect     = locateAll( action['colab_connect.PNG']      )
                     ls_reconnect   = locateAll( action['colab_reconnect.PNG']    )
-                    ls_d_close     = locateAll( action['dialogue_close.PNG']     )
-                    ls_d_reconnect = locateAll( action['dialogue_reconnect.PNG'] )
-                    if any(ls_connect,ls_reconnect):
-                        click_pos = center(ls_d_close[0])  ; click(*click_pos)
+                    if any((ls_connect,ls_reconnect)):
                         break
-                    if any(ls_connect,ls_reconnect):
-                        break
-
+                with open('Colab_Count.txt','w') as file:
+                    Colab_Count += 1
+                    file.write(str(Colab_Count))
         # except pyautogui.FailSafeException as exc:
         except Exception as exc:
             self.auto_thread_running = False
         
 if __name__=='__main__':
-    colab = AutomateColab('images')
+    colab = AutomateColab('images',0.1,True)
     assert (colab.W,colab.H)==(1366,768)
     colab.start()
