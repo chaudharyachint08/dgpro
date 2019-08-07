@@ -39,12 +39,13 @@ def time_limit_test(GPU_check=True):
     print('Code Begins at Time',init,end='\n\n')
 
     while True:
-        _ = datetime.now()
         if GPU_check: 
-            model.fit(x_train, y_train, batch_size=batch_size, epochs=1, validation_data=(x_test, y_test), shuffle=True, verbose=False)
+            model.fit(x_train, y_train, batch_size=batch_size, epochs=5, validation_data=(x_test, y_test), shuffle=True, verbose=False)
+            _ = datetime.now()
             print('\r{} Epochs in {}'.format(state,_-init),end='')
             state += 1
         else:
+            _ = datetime.now()
             if not ((_-init).seconds%60):
                 if state:
                     print('\rCPU only Execution from {}'.format(_-init),end='')

@@ -1,0 +1,6 @@
+https://automatetheboringstuff.com/chapter18/
+https://pyautogui.readthedocs.io/en/latest/mouse.html
+https://www.geeksforgeeks.org/mouse-keyboard-automation-using-python/
+
+https://stackoverflow.com/questions/48750199/google-colaboratory-misleading-information-about-its-gpu-only-5-ram-available
+https://stackoverflow.com/questions/47818822/can-i-use-tensorboard-with-google-colab
