@@ -1,0 +1,2 @@
+GUI Automation for Drive Authenticator in 1st cell, as optional based on detection
+tab switching, scrolling, copying the TOKEN and pressing ENTER
