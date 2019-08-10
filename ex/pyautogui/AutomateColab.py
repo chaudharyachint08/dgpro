@@ -96,12 +96,21 @@ class AutomateColab(threading.Thread):
         delay = self.drag_limit*np.random.random()
         move(*arg,duration=delay) ; click(*arg)
 
+    def authenticate(self,action):
+        pass
+    
     def run(self):
         'Entire code to automate Google-Colab in this function, as a thread'
         action = {x:os.path.join(self.action_images_dir,x) for x in os.listdir(self.action_images_dir)}
         pyautogui.hotkey('altleft','\t')
         Colab_Count = 0
         self.auto_thread_running = True
+
+        if locateAll(action['drive_import.PNG']):
+            authentication_flag = True
+        else:
+            authentication_flag = False
+
         while self.main_running:
             while self.auto_thread_running:
                 try:    
@@ -136,6 +145,9 @@ class AutomateColab(threading.Thread):
                             click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos) ; break
                         time.sleep(self.sleep_duration)
                     click_pos = self.mcenter(locateAll(action['list_run_all.PNG'])[0]) ; self.mclick(*click_pos)
+
+                    if authentication_flag:
+                        self.authenticate(action)
 
                     init = datetime.now()
                     # Wait till VM shows BUSY
