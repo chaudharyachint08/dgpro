@@ -100,8 +100,9 @@ class AutomateColab(threading.Thread):
         while True:
             tmp = locateAll(self.action[image])
             if tmp:
+                click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos)
                 break
-        click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos)
+            time.sleep(self.sleep_duration)
         
     def authenticate(self,action):
         self.wait_find_click( 'drive_url.PNG'  )
@@ -129,12 +130,8 @@ class AutomateColab(threading.Thread):
 
         while self.main_running:
             while self.auto_thread_running:
-                try:    
-                    while True:
-                        tmp = locateAll(action['toolbar_runtime.PNG'])
-                        if tmp:
-                            click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos) ; break
-                        time.sleep(self.sleep_duration)
+                try:
+                    self.wait_find_click('toolbar_runtime.PNG')
                     click_pos = self.mcenter(locateAll(action['list_reset_all_runtime.PNG'])[0]) ; self.mclick(*click_pos)
                     click_pos = self.mcenter(locateAll(action['dialogue_yes.PNG'          ])[0]) ; self.mclick(*click_pos)
 
@@ -155,11 +152,7 @@ class AutomateColab(threading.Thread):
                     # with open('AFTER_VM_READY','w') as ftmp:
                     #     pass
 
-                    while True:
-                        tmp = locateAll(action['toolbar_runtime.PNG'])
-                        if tmp:
-                            click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos) ; break
-                        time.sleep(self.sleep_duration)
+                    self.wait_find_click('toolbar_runtime.PNG')
                     click_pos = self.mcenter(locateAll(action['list_run_all.PNG'])[0]) ; self.mclick(*click_pos)
 
                     if authentication_flag:
