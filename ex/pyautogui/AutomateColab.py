@@ -96,24 +96,26 @@ class AutomateColab(threading.Thread):
         delay = self.drag_limit*np.random.random()
         move(*arg,duration=delay) ; click(*arg)
 
-    def wait_find_click(self,image):
+    def wait_find_click(self,image,auto_scroll=0):
         while True:
             tmp = locateAll(self.action[image])
             if tmp:
                 click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos)
                 break
+            pyautogui.scroll(auto_scroll)
             time.sleep(self.sleep_duration)
         
-    def authenticate(self,action):
+    def authenticate(self):
         self.wait_find_click( 'drive_url.PNG'  )
-        self.wait_find_click( 'drive_user.PNG' )
-        pyautogui.scroll(-5000) # Very high Down-scroll
-        self.wait_find_click( 'drive_allow_button.PNG' )
-        self.wait_find_click( 'drive_copy_button.PNG'  )
-        pyautogui.hotkey('ctlrleft','altleft','\t')
+        time.sleep(min((5,self.sleep_duration)))
+        self.wait_find_click( 'drive_user.PNG',-200 )
+        self.wait_find_click( 'drive_allow_button.PNG',-200 )
+        self.wait_find_click( 'drive_copy_button.PNG',200  )
+        pyautogui.hotkey('ctrlleft','shiftleft','\t')
         self.wait_find_click( 'drive_input_box.PNG'    )
-        pyautogui.hotkey('ctlrleft','v','\t')
-        pyautogui.hotkey('enterleft')
+        pyautogui.hotkey('ctrlleft','v')
+        time.sleep(min((5,self.sleep_duration)))
+        pyautogui.hotkey('enter')
 
     def run(self):
         'Entire code to automate Google-Colab in this function, as a thread'
@@ -127,6 +129,7 @@ class AutomateColab(threading.Thread):
             authentication_flag = True
         else:
             authentication_flag = False
+        # authentication_flag = True
 
         while self.main_running:
             while self.auto_thread_running:
@@ -159,6 +162,7 @@ class AutomateColab(threading.Thread):
                         self.authenticate()
 
                     init = datetime.now()
+
                     # Wait till VM shows BUSY
                     while not locateAll(action['vm_busy.PNG']):
                         time.sleep(self.sleep_duration)
