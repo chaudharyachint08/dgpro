@@ -96,13 +96,29 @@ class AutomateColab(threading.Thread):
         delay = self.drag_limit*np.random.random()
         move(*arg,duration=delay) ; click(*arg)
 
+    def wait_find_click(self,image):
+        while True:
+            tmp = locateAll(self.action[image])
+            if tmp:
+                break
+        click_pos = self.mcenter(tmp[0]) ; self.mclick(*click_pos)
+        
     def authenticate(self,action):
-        pass
-    
+        self.wait_find_click( 'drive_url.PNG'  )
+        self.wait_find_click( 'drive_user.PNG' )
+        pyautogui.scroll(-5000) # Very high Down-scroll
+        self.wait_find_click( 'drive_allow_button.PNG' )
+        self.wait_find_click( 'drive_copy_button.PNG'  )
+        pyautogui.hotkey('ctlrleft','altleft','\t')
+        self.wait_find_click( 'drive_input_box.PNG'    )
+        pyautogui.hotkey('ctlrleft','v','\t')
+        pyautogui.hotkey('enterleft')
+
     def run(self):
         'Entire code to automate Google-Colab in this function, as a thread'
-        action = {x:os.path.join(self.action_images_dir,x) for x in os.listdir(self.action_images_dir)}
+        self.action = action = {x:os.path.join(self.action_images_dir,x) for x in os.listdir(self.action_images_dir)}
         pyautogui.hotkey('altleft','\t')
+        pyautogui.scroll(5000) # Very high Up-scroll
         Colab_Count = 0
         self.auto_thread_running = True
 
@@ -147,7 +163,7 @@ class AutomateColab(threading.Thread):
                     click_pos = self.mcenter(locateAll(action['list_run_all.PNG'])[0]) ; self.mclick(*click_pos)
 
                     if authentication_flag:
-                        self.authenticate(action)
+                        self.authenticate()
 
                     init = datetime.now()
                     # Wait till VM shows BUSY
