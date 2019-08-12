@@ -1,1 +1,9 @@
 Build Interface for IO of 2-Agent system & start reading literature
+
+Write Grammar.py file for syntax generation
+
+Query --> select attribute_list/*
+			from [Query as Alias] <- list data type
+			where [clause] <- list data type
+			[group by]
+			[order by]
