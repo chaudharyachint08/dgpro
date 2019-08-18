@@ -7,3 +7,10 @@ Query --> select attribute_list/*
 			where [clause] <- list data type
 			[group by]
 			[order by]
+
+
+https://github.com/NVlabs/noise2noise
+https://paperswithcode.com/paper/photo-realistic-single-image-super-resolution
+https://paperswithcode.com/paper/esrgan-enhanced-super-resolution-generative
+https://paperswithcode.com/paper/deblurgan-v2-deblurring-orders-of-magnitude
+https://paperswithcode.com/paper/behaviour-suite-for-reinforcement-learning
