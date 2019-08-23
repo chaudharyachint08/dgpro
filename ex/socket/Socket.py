@@ -7,7 +7,7 @@ import numpy as np
 
 class PeerNode:
     def __init__(self,other_peers=2):
-        ' At least 2 other peers are assumed
+        'At least 2 other peers are assumed'
         # create TCP/IP socket
         self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
