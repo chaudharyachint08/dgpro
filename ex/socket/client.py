@@ -27,7 +27,7 @@ for entry in temperature_data:
     sock.sendall(new_data)
     
     # wait for two seconds
-    time.sleep(2)
+    #time.sleep(2)
 
 # close connection
 sock.close()
