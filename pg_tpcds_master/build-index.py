@@ -31,8 +31,8 @@ connection,cursor=None,None
 def setup():
     global connection,cursor
     try:
-        connection = psycopg2.connect(user = "postgres",
-                                          password = "Iwilldoit#1",
+        connection = psycopg2.connect(user = "malhar",
+                                          password = "database",
                                           host = "127.0.0.1",
                                           port = "5432",
                                           database = "TPC-DS")
