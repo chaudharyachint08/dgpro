@@ -1,37 +1,15 @@
 import psycopg2
 
 try:
-    connection = psycopg2.connect(user = "postgres",
-                                  password = "Iwilldoit#1",
+    connection = psycopg2.connect(user = "sa",
+                                  password = "database",
                                   host = "127.0.0.1",
                                   port = "5432",
-                                  database = "TPC-DS")
+                                  database = "tpcds-1")
     #cursor = connection.cursor(cursor_factory=RealDictCursor)
     cursor = connection.cursor()
     #Query to be executed with format & other specifiers
-    query = '''explain (ANALYZE true, COSTS true, FORMAT XML) select
-	l_returnflag,
-	l_linestatus,
-	sum(l_quantity) as sum_qty,
-	sum(l_extendedprice) as sum_base_price,
-	sum(l_extendedprice * (1 - l_discount)) as sum_disc_price,
-	sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) as sum_charge,
-	avg(l_quantity) as avg_qty,
-	avg(l_extendedprice) as avg_price,
-	avg(l_discount) as avg_disc,
-	count(*) as count_order
-    from
-    	lineitem
-    where
-    	l_shipdate between date '1992-01-02' and date '1996-01-08' --SEL_1
-    	--l_shipdate <= date '1998-12-01' - interval '82' day
-    group by
-    	l_returnflag,
-    	l_linestatus
-    order by
-    	l_returnflag,
-    	l_linestatus
-    '''
+    query = '''EXPLAIN (COSTS, VERBOSE, FORMAT XML) select * from call_center;'''
     cursor.execute(query)
     f = open('output.xml','w')
     f.write(cursor.fetchone()[0])
